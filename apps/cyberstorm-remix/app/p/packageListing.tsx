@@ -278,10 +278,10 @@ export default function PackageListing() {
     }
 
     setLastUpdated(
-      <RelativeTime time={listing.last_updated} suppressHydrationWarning />
+      <RelativeTime time={listing.version_created} suppressHydrationWarning />
     );
     setFirstUploaded(
-      <RelativeTime time={listing.datetime_created} suppressHydrationWarning />
+      <RelativeTime time={listing.package_created} suppressHydrationWarning />
     );
   }, []);
   // END: For sidebar meta dates

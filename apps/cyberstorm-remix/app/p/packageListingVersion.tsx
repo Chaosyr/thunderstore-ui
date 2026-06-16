@@ -383,7 +383,7 @@ function packageMeta(listing: PackageListingDetails) {
         <div className="package-listing-sidebar__label">Date Uploaded</div>
         <div className="package-listing-sidebar__content">
           <RelativeTime
-            time={listing.datetime_created}
+            time={listing.version_created}
             suppressHydrationWarning
           />
         </div>

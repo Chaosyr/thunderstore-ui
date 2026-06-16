@@ -142,7 +142,6 @@ export const getFakePackageListingDetails = async (
     ...getFakePackageListing(community, namespace, name),
 
     community_name: faker.word.sample(),
-    datetime_created: faker.date.past({ years: 2 }).toISOString(),
     dependant_count: faker.number.int({ min: 0, max: 2000 }),
     dependencies,
     dependency_count: dependencies.length,
@@ -151,10 +150,12 @@ export const getFakePackageListingDetails = async (
     has_changelog: true,
     install_url: `ror2mm://v1/install/thunderstore.io/${namespace}/${name}/${ver}/`,
     latest_version_number: getVersionNumber(),
+    package_created: faker.date.past({ years: 2 }).toISOString(),
     team: {
       name: faker.word.words(3),
       members: await getFakeTeamMembers(seed),
     },
+    version_created: faker.date.recent({ days: 700 }).toISOString(),
     website_url:
       faker.helpers.maybe(faker.internet.url, { probability: 0.9 }) ?? null,
   };

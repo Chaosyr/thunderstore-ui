@@ -27,9 +27,9 @@ export interface PackageListingStatus {
   package_admin_url: string | null; // This is actually just a path
 }
 
-export interface PackageListingDetails extends PackageListing {
+export interface PackageListingDetails
+  extends Omit<PackageListing, "last_updated"> {
   community_name: string;
-  datetime_created: string;
   dependant_count: number;
   dependencies: PackageListingDependency[];
   dependency_count: number;
@@ -40,7 +40,9 @@ export interface PackageListingDetails extends PackageListing {
   latest_version_number: string;
   listing_admin_url?: string | null;
   package_admin_url?: string | null;
+  package_created: string;
   team: PackageTeam;
+  version_created: string;
   website_url: string | null;
 }
 
