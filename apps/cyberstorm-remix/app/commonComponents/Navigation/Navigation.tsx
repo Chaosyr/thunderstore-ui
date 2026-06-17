@@ -70,11 +70,42 @@ const closeMobileNavigationMenus = () => {
 // (new.thunderstore.io), so strip a leading new./old. before prepending old.;
 // otherwise new.thunderstore.io would map to the nonexistent
 // old.new.thunderstore.io.
+// Several Nimbus routes don't share a path with their legacy Django equivalent,
+// so a path-preserving switch would 404. Translate the known mismatches down to
+// a valid legacy page (TS-3941):
+//  - Package pages: Nimbus adds sub-routes (required, wiki, changelog, versions,
+//    source, dependants, v/<version>/...) the legacy site lacks → collapse to
+//    the package detail page.
+//  - Teams: Nimbus serves them at /teams[/<name>/...] but the legacy site mounts
+//    them under /settings/teams/, and the per-team sub-tabs (members,
+//    service-accounts, settings) are a single page there → collapse to the team
+//    detail path.
+//  - User settings: Nimbus uses /settings[/account], but the legacy settings
+//    landing is /settings/linked-accounts/ (bare /settings/ has no view).
+function toLegacyPath(pathname: string): string {
+  const packageDetail = pathname.match(/^(\/c\/[^/]+\/p\/[^/]+\/[^/]+\/)/);
+  if (packageDetail) return packageDetail[1];
+
+  const team = pathname.match(/^\/teams\/([^/]+)/);
+  if (team) return `/settings/teams/${team[1]}/`;
+  if (pathname === "/teams" || pathname === "/teams/") {
+    return "/settings/teams/";
+  }
+
+  if (pathname === "/settings" || pathname.startsWith("/settings/")) {
+    return "/settings/linked-accounts/";
+  }
+
+  return pathname;
+}
+
 function switchToLegacySite() {
   if (typeof window === "undefined") return;
   const { protocol, hostname, pathname } = window.location;
   const baseHost = hostname.replace(/^(?:new|old)\./, "");
-  window.location.assign(`${protocol}//old.${baseHost}${pathname}`);
+  window.location.assign(
+    `${protocol}//old.${baseHost}${toLegacyPath(pathname)}`
+  );
 }
 
 const legacySwitchStyle: CSSProperties = {
