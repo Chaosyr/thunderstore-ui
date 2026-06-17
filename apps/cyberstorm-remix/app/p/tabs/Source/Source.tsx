@@ -1,4 +1,4 @@
-import { faClock, faDownload } from "@fortawesome/free-solid-svg-icons";
+import { faClock } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { TabFetchState } from "app/p/components/TabFetchState/TabFetchState";
 import { getSessionTools } from "cyberstorm/security/publicEnvVariables";
@@ -11,7 +11,6 @@ import ago from "s-ago";
 import {
   NewAlert as Alert,
   Heading,
-  NewButton,
   NewIcon,
   SkeletonBox,
   TooltipWrapper,
@@ -143,10 +142,6 @@ export default function Source() {
                       />
                     </div>
                   </div>
-                  <DownloadButton
-                    download_url={decompilation.url}
-                    packageSize={decompilation.result_size}
-                  />
                 </div>
                 {decompilation.is_truncated && (
                   <Alert csVariant="warning">
@@ -158,9 +153,12 @@ export default function Source() {
                   className="package-source__decompilations-file"
                   key={decompilation.source_file_name}
                 >
+                  {/* Download now lives in the CodeBox toolbar, labelled with
+                      the file ending. */}
                   <CodeBoxHTML
                     value={decompilation.result}
                     language={"csharp"}
+                    downloadUrl={decompilation.url}
                   />
                 </div>
               </div>
@@ -197,24 +195,4 @@ const DecompilationDateDisplay = (props: {
       </p>
     </div>
   );
-};
-
-const DownloadButton = (props: {
-  download_url: string | undefined;
-  packageSize: string | undefined;
-}) => {
-  return props.download_url ? (
-    <NewButton
-      csVariant="secondary"
-      csSize="medium"
-      primitiveType="link"
-      href={props.download_url}
-    >
-      <NewIcon noWrapper csMode="inline">
-        <FontAwesomeIcon icon={faDownload} />
-      </NewIcon>
-      Download
-      {props.packageSize ? ` (${props.packageSize})` : ""}
-    </NewButton>
-  ) : null;
 };
