@@ -11,9 +11,14 @@ import {
 import { ReportPackageModal } from "./ReportPackageModal";
 import { ReportPackageSubmitted } from "./ReportPackageSubmitted";
 
-const createInitialFormInputs = (): ReportPackageFormState => ({
+const createInitialFormInputs = (
+  defaultVersion?: string
+): ReportPackageFormState => ({
   reason: null,
   description: "",
+  // Only seed a version when we actually have one; an empty string would pass
+  // the schema but be rejected by the backend's semver parsing.
+  ...(defaultVersion ? { version: defaultVersion } : {}),
 });
 
 export function useReportPackage(formProps: {
@@ -45,15 +50,25 @@ export function useReportPackage(formProps: {
     }));
   }, []);
 
-  const resetFormInputs = useCallback(() => {
-    setFormInputs(createInitialFormInputs());
-  }, []);
-
   const [props, setProps] = useState<ReportPackageFormProps | null>(null);
+
+  // Reseed the default version on reset so reopening the modal (after a submit
+  // or cancel) defaults to the current version again instead of an empty select.
+  const resetFormInputs = useCallback(() => {
+    setFormInputs(createInitialFormInputs(props?.defaultVersion));
+  }, [props?.defaultVersion]);
 
   async function awaitAndSetProps() {
     if (!props) {
-      setProps(await formProps.formPropsPromise);
+      const resolved = await formProps.formPropsPromise;
+      setProps(resolved);
+      // Preselect the version the user has open once the version list resolves,
+      // but only if we have a real version and the user hasn't picked one yet.
+      setFormInputs((prev) =>
+        prev.version || !resolved.defaultVersion
+          ? prev
+          : { ...prev, version: resolved.defaultVersion }
+      );
     }
   }
 

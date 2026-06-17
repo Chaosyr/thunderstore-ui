@@ -8,6 +8,7 @@ import { faArrowUpRight, faLips } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { CommunityPromo } from "app/commonComponents/CommunityPromo/CommunityPromo";
 import { PageHeader } from "app/commonComponents/PageHeader/PageHeader";
+import type { ReportPackageFormProps } from "app/p/components/ReportPackage/ReportPackageForm";
 import { useReportPackage } from "app/p/components/ReportPackage/useReportPackage";
 import TeamMembers from "app/p/components/TeamMembers/TeamMembers";
 import { type OutletContextShape } from "app/root";
@@ -233,12 +234,36 @@ export default function PackageListing() {
   const [isLiked, setIsLiked] = useState(false);
   const toast = useToast();
 
+  // Build the report form props once and keep the same Promise instance across
+  // re-renders; recreating the IIFE every render would fire redundant
+  // getPackageVersions requests and racing state updates.
+  const formPropsPromiseRef = useRef<
+    Promise<ReportPackageFormProps> | undefined
+  >(undefined);
+  let formPropsPromise = formPropsPromiseRef.current;
+  if (!formPropsPromise) {
+    formPropsPromise = (async () => {
+      const versionsData = await dapper.getPackageVersions(
+        namespace_id,
+        package_id
+      );
+      return {
+        community: community_identifier,
+        namespace: namespace_id,
+        package: package_id,
+        versions: versionsData.map((v) => v.version_number),
+        // On the package page the open version is the latest one.
+        defaultVersion:
+          listing?.latest_version_number ??
+          versionsData[0]?.version_number ??
+          "",
+      };
+    })();
+    formPropsPromiseRef.current = formPropsPromise;
+  }
+
   const { ReportPackageButton, ReportPackageModal } = useReportPackage({
-    formPropsPromise: Promise.resolve({
-      community: community_identifier,
-      namespace: namespace_id,
-      package: package_id,
-    }),
+    formPropsPromise: formPropsPromise,
     config: config,
   });
 
