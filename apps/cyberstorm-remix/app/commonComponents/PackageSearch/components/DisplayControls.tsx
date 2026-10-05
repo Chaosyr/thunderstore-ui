@@ -3,6 +3,7 @@ import {
   faCaretDown,
   faList,
   faSquare,
+  faArrowsLeftRightToLine,
 } from "@fortawesome/free-solid-svg-icons";
 import { faGrid, faRectangleWide } from "@fortawesome/pro-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -43,6 +44,7 @@ interface DisplayMenuProps<T extends string> {
   name: "cards" | "view";
   options: DisplayOption<T>[];
   onSelect: (value: T) => void;
+  triggerIcon?: IconDefinition;
 }
 
 function DisplayMenu<T extends string>(props: DisplayMenuProps<T>) {
@@ -62,18 +64,29 @@ function DisplayMenu<T extends string>(props: DisplayMenuProps<T>) {
             `display-controls__trigger--${props.name}`
           )}
         >
-          {/* All icons render; CSS reveals the active one — see
-              DisplayControls.css. */}
-          {props.options.map((option) => (
+          {props.triggerIcon ? (
+            /* Render only the static main button icon if provided */
             <NewIcon
-              key={option.value}
               csMode="inline"
               noWrapper
-              rootClasses={`display-controls__trigger-icon display-controls__trigger-icon--${option.value}`}
+              rootClasses="display-controls__trigger-icon display-controls__trigger-icon--static"
             >
-              <FontAwesomeIcon icon={option.icon} />
+              <FontAwesomeIcon icon={props.triggerIcon} />
             </NewIcon>
-          ))}
+          ) : (
+            /* All icons render; CSS reveals the active one — see
+               DisplayControls.css. */
+            props.options.map((option) => (
+              <NewIcon
+                key={option.value}
+                csMode="inline"
+                noWrapper
+                rootClasses={`display-controls__trigger-icon display-controls__trigger-icon--${option.value}`}
+              >
+                <FontAwesomeIcon icon={option.icon} />
+              </NewIcon>
+            ))
+          )}
           <NewIcon
             csMode="inline"
             noWrapper
@@ -136,6 +149,7 @@ export function DisplayControls() {
         header="View"
         name="view"
         options={WIDTH_OPTIONS}
+        triggerIcon={faArrowsLeftRightToLine}
         onSelect={(value) => {
           // Stored as "default"/"wide" to match the pre-hydration script.
           persist(
